@@ -1,0 +1,5 @@
+# Use these with the "rest client" extension in vscode
+
+GET http://localhost:3000/users
+
+
