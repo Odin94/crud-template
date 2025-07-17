@@ -1,26 +1,11 @@
 # Getting Started with [Fastify-CLI](https://www.npmjs.com/package/fastify-cli)
 This project was bootstrapped with Fastify-CLI.
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm run dev`
-
-To start the app in dev mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-### `npm start`
-
-For production mode
-
-### `npm run test`
-
-Run the test cases.
-
-## Learn More
-
-To learn Fastify, check out the [Fastify documentation](https://fastify.dev/docs/latest/).
+## How to run
+* `npm isntall`       to install dependencies
+* `npm start`         to run in prod mode
+* `npm run dev:start` to run in dev mode
+* `npm run test`      to run tests
 
 
 ## Drizzle Database

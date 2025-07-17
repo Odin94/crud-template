@@ -1,7 +1,10 @@
+import bcrypt from "bcrypt"
+import { eq } from "drizzle-orm"
 import { FastifyPluginAsync } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import { z } from "zod/v4"
 import { users as usersTable } from "../db/schema"
+import { generateToken, verifyToken, extractTokenFromHeader } from "../utils/jwt"
 
 const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     const zodFastify = fastify.withTypeProvider<ZodTypeProvider>()
@@ -18,18 +21,81 @@ const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         },
         async function (request, reply) {
             try {
-                const allUsers = await fastify.db.select().from(usersTable)
+                const users = await fastify.db
+                    .select({
+                        id: usersTable.id,
+                        email: usersTable.email,
+                        name: usersTable.name,
+                    })
+                    .from(usersTable)
 
                 return {
-                    success: true,
-                    users: allUsers,
+                    users,
                 }
             } catch (error) {
                 reply.status(500)
                 return {
-                    success: false,
                     message: "Failed to fetch users from database",
                 }
+            }
+        }
+    )
+
+    zodFastify.post(
+        "/users",
+        {
+            schema: {
+                body: createUserBodySchema,
+                response: {
+                    200: loginSuccessResponseSchema,
+                    400: errorResponseSchema,
+                    409: errorResponseSchema,
+                },
+            },
+        },
+        async function (request, reply) {
+            const { name, email, password } = request.body
+
+            const saltedPasswordHash = await bcrypt.hash(password, 12)
+
+            const existingUsers = await fastify.db.select().from(usersTable).where(eq(usersTable.email, email))
+
+            if (existingUsers.length > 0) {
+                reply.status(409)
+                return {
+                    message: "User with this email already exists",
+                }
+            }
+
+            const [newUser] = await fastify.db
+                .insert(usersTable)
+                .values({
+                    name,
+                    email,
+                    saltedPasswordHash,
+                })
+                .returning()
+
+            if (!newUser) {
+                reply.status(500)
+                return {
+                    message: "Failed to create user",
+                }
+            }
+
+            const token = generateToken({
+                userId: String(newUser.id),
+                email: newUser.email,
+                name: newUser.name,
+            })
+
+            return {
+                user: {
+                    id: String(newUser.id),
+                    email: newUser.email,
+                    name: newUser.name,
+                },
+                token,
             }
         }
     )
@@ -49,26 +115,55 @@ const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         async function (request, reply) {
             const { email, password } = request.body
 
-            if (email === "test@example.com" && password === "password123") {
-                const user = {
-                    id: "user-123",
-                    email: "test@example.com",
-                    name: "Test User",
+            request.log.info("-----------------------")
+            request.log.info({ email, password })
+            try {
+                const [user] = await fastify.db
+                    .select({
+                        id: usersTable.id,
+                        email: usersTable.email,
+                        name: usersTable.name,
+                        saltedPasswordHash: usersTable.saltedPasswordHash,
+                    })
+                    .from(usersTable)
+                    .where(eq(usersTable.email, email))
+
+                request.log.info("user", user)
+                if (!user || !user.saltedPasswordHash) {
+                    reply.status(401)
+                    return {
+                        message: "Invalid email or password",
+                    }
                 }
 
-                const token = "jwt-token-" + Date.now()
+                const isPasswordValid = await bcrypt.compare(password, user.saltedPasswordHash)
+
+                if (!isPasswordValid) {
+                    reply.status(401)
+                    return {
+                        message: "Invalid email or password",
+                    }
+                }
+
+                const token = generateToken({
+                    userId: String(user.id),
+                    email: user.email,
+                    name: user.name,
+                })
 
                 return {
-                    success: true,
-                    message: "Login successful",
-                    user,
+                    user: {
+                        id: String(user.id),
+                        email: user.email,
+                        name: user.name,
+                    },
                     token,
                 }
-            } else {
-                reply.status(401)
+            } catch (error) {
+                request.log.error(error)
+                reply.status(500)
                 return {
-                    success: false,
-                    message: "Invalid email or password",
+                    message: "Internal server error",
                 }
             }
         }
@@ -91,7 +186,6 @@ const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             if (!authHeader || !authHeader.startsWith("Bearer ")) {
                 reply.status(401)
                 return {
-                    success: false,
                     message: "No valid authorization token provided",
                 }
             }
@@ -100,13 +194,11 @@ const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
             if (token.startsWith("jwt-token-")) {
                 return {
-                    success: true,
                     message: "Logout successful",
                 }
             } else {
                 reply.status(401)
                 return {
-                    success: false,
                     message: "Invalid token",
                 }
             }
@@ -125,33 +217,37 @@ const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             },
         },
         async function (request, reply) {
-            const authHeader = request.headers.authorization
+            try {
+                const token = extractTokenFromHeader(request.headers.authorization)
+                const payload = verifyToken(token)
 
-            if (!authHeader || !authHeader.startsWith("Bearer ")) {
+                const [user] = await fastify.db
+                    .select({
+                        id: usersTable.id,
+                        email: usersTable.email,
+                        name: usersTable.name,
+                    })
+                    .from(usersTable)
+                    .where(eq(usersTable.id, payload.userId))
+
+                if (!user) {
+                    reply.status(401)
+                    return {
+                        message: "User not found",
+                    }
+                }
+
+                return {
+                    user: {
+                        id: String(user.id),
+                        email: user.email,
+                        name: user.name,
+                    },
+                }
+            } catch (error) {
+                request.log.error(error)
                 reply.status(401)
                 return {
-                    success: false,
-                    message: "No valid authorization token provided",
-                }
-            }
-
-            const token = authHeader.replace("Bearer ", "")
-
-            if (token.startsWith("jwt-token-")) {
-                const user = {
-                    id: "user-123",
-                    email: "test@example.com",
-                    name: "Test User",
-                }
-
-                return {
-                    success: true,
-                    user,
-                }
-            } else {
-                reply.status(401)
-                return {
-                    success: false,
                     message: "Invalid token",
                 }
             }
@@ -165,12 +261,10 @@ const users: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
 // Common schemas
 const errorResponseSchema = z.object({
-    success: z.boolean(),
     message: z.string(),
 })
 
 const successResponseSchema = z.object({
-    success: z.boolean(),
     message: z.string(),
 })
 
@@ -182,25 +276,21 @@ const userSchema = z.object({
 
 // GET /users schemas
 const getUsersResponseSchema = z.object({
-    success: z.boolean(),
-    users: z.array(
-        z.object({
-            id: z.number(),
-            name: z.string().nullable(),
-            email: z.string().nullable(),
-        })
-    ),
+    users: z.array(userSchema),
 })
 
-// POST /login schemas
+const createUserBodySchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.email("Invalid email format"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+})
+
 const loginBodySchema = z.object({
     email: z.email("Invalid email format"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string(),
 })
 
 const loginSuccessResponseSchema = z.object({
-    success: z.boolean(),
-    message: z.string(),
     user: userSchema,
     token: z.string(),
 })
@@ -216,7 +306,6 @@ const meHeadersSchema = z.object({
 })
 
 const meSuccessResponseSchema = z.object({
-    success: z.boolean(),
     user: userSchema,
 })
 
