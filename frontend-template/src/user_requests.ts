@@ -44,3 +44,127 @@ export async function logoutUser(token: string): Promise<{ message: string }> {
     })
     return handleResponse<{ message: string }>(response)
 }
+
+export async function fetchMyEvents(
+    token: string,
+    options?: { limit?: number; offset?: number; event_name?: string }
+): Promise<{
+    events: Array<{
+        session_id: string
+        event_id: string
+        user_id?: string
+        event_name: string
+        event_data: Record<string, unknown>
+        timestamp: string
+    }>
+    total: number
+    limit: number
+    offset: number
+}> {
+    const params = new URLSearchParams()
+    if (options?.limit) params.append("limit", options.limit.toString())
+    if (options?.offset) params.append("offset", options.offset.toString())
+    if (options?.event_name) params.append("event_name", options.event_name)
+
+    const response = await fetch(`${API_BASE_URL}/analytics/my-events?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    })
+    return handleResponse(response)
+}
+
+export async function fetchSessionEvents(
+    token: string,
+    sessionId: string,
+    options?: { limit?: number; offset?: number; event_name?: string }
+): Promise<{
+    events: Array<{
+        session_id: string
+        event_id: string
+        user_id?: string
+        event_name: string
+        event_data: Record<string, unknown>
+        timestamp: string
+    }>
+    total: number
+    limit: number
+    offset: number
+}> {
+    const params = new URLSearchParams()
+    if (options?.limit) params.append("limit", options.limit.toString())
+    if (options?.offset) params.append("offset", options.offset.toString())
+    if (options?.event_name) params.append("event_name", options.event_name)
+
+    const response = await fetch(`${API_BASE_URL}/analytics/session/${sessionId}?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    })
+    return handleResponse(response)
+}
+
+export async function fetchTimeRangeEvents(
+    token: string,
+    startTime: string,
+    endTime: string,
+    options?: { limit?: number; offset?: number }
+): Promise<{
+    events: Array<{
+        session_id: string
+        event_id: string
+        user_id?: string
+        event_name: string
+        event_data: Record<string, unknown>
+        timestamp: string
+    }>
+    total: number
+    limit: number
+    offset: number
+}> {
+    const params = new URLSearchParams({
+        start_time: startTime,
+        end_time: endTime,
+    })
+    if (options?.limit) params.append("limit", options.limit.toString())
+    if (options?.offset) params.append("offset", options.offset.toString())
+
+    const response = await fetch(`${API_BASE_URL}/analytics/time-range?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    })
+    return handleResponse(response)
+}
+
+export async function fetchAnalyticsStats(token: string): Promise<{
+    totalEvents: number
+    uniqueEventTypes: number
+    mostFrequentEvent: { name: string; count: number } | null
+    eventBreakdown: Record<string, number>
+}> {
+    const response = await fetch(`${API_BASE_URL}/analytics/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+    })
+    return handleResponse(response)
+}
+
+export async function fetchAllEvents(
+    token: string,
+    options?: { limit?: number; offset?: number }
+): Promise<{
+    events: Array<{
+        session_id: string
+        event_id: string
+        user_id?: string
+        event_name: string
+        event_data: Record<string, unknown>
+        timestamp: string
+    }>
+    total: number
+    limit: number
+    offset: number
+}> {
+    const params = new URLSearchParams()
+    if (options?.limit) params.append("limit", options.limit.toString())
+    if (options?.offset) params.append("offset", options.offset.toString())
+
+    const response = await fetch(`${API_BASE_URL}/analytics/events?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    })
+    return handleResponse(response)
+}
