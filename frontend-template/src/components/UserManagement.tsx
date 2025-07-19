@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import type { UsersResponse } from "../types"
 import { fetchUsers, createUser } from "../user_requests"
+import { EventsChart } from "./EventsChart"
 
 interface UserManagementProps {
     token: string
@@ -131,6 +132,10 @@ export function UserManagement({ token, onLogout, isLoggingOut = false }: UserMa
                         ))}
                     </ul>
                 )}
+            </div>
+
+            <div className="w-full max-w-4xl">
+                <EventsChart token={token} />
             </div>
         </div>
     )

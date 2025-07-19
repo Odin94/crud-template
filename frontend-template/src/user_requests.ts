@@ -1,4 +1,4 @@
-import type { LoginResponse, UsersResponse } from "./types"
+import type { LoginResponse, UsersResponse, EventsResponse } from "./types"
 
 const API_BASE_URL = "http://localhost:3000"
 
@@ -48,19 +48,7 @@ export async function logoutUser(token: string): Promise<{ message: string }> {
 export async function fetchMyEvents(
     token: string,
     options?: { limit?: number; offset?: number; event_name?: string }
-): Promise<{
-    events: Array<{
-        session_id: string
-        event_id: string
-        user_id?: string
-        event_name: string
-        event_data: Record<string, unknown>
-        timestamp: string
-    }>
-    total: number
-    limit: number
-    offset: number
-}> {
+): Promise<EventsResponse> {
     const params = new URLSearchParams()
     if (options?.limit) params.append("limit", options.limit.toString())
     if (options?.offset) params.append("offset", options.offset.toString())
@@ -76,19 +64,7 @@ export async function fetchSessionEvents(
     token: string,
     sessionId: string,
     options?: { limit?: number; offset?: number; event_name?: string }
-): Promise<{
-    events: Array<{
-        session_id: string
-        event_id: string
-        user_id?: string
-        event_name: string
-        event_data: Record<string, unknown>
-        timestamp: string
-    }>
-    total: number
-    limit: number
-    offset: number
-}> {
+): Promise<EventsResponse> {
     const params = new URLSearchParams()
     if (options?.limit) params.append("limit", options.limit.toString())
     if (options?.offset) params.append("offset", options.offset.toString())
@@ -105,19 +81,7 @@ export async function fetchTimeRangeEvents(
     startTime: string,
     endTime: string,
     options?: { limit?: number; offset?: number }
-): Promise<{
-    events: Array<{
-        session_id: string
-        event_id: string
-        user_id?: string
-        event_name: string
-        event_data: Record<string, unknown>
-        timestamp: string
-    }>
-    total: number
-    limit: number
-    offset: number
-}> {
+): Promise<EventsResponse> {
     const params = new URLSearchParams({
         start_time: startTime,
         end_time: endTime,
@@ -143,22 +107,7 @@ export async function fetchAnalyticsStats(token: string): Promise<{
     return handleResponse(response)
 }
 
-export async function fetchAllEvents(
-    token: string,
-    options?: { limit?: number; offset?: number }
-): Promise<{
-    events: Array<{
-        session_id: string
-        event_id: string
-        user_id?: string
-        event_name: string
-        event_data: Record<string, unknown>
-        timestamp: string
-    }>
-    total: number
-    limit: number
-    offset: number
-}> {
+export async function fetchAllEvents(token: string, options?: { limit?: number; offset?: number }): Promise<EventsResponse> {
     const params = new URLSearchParams()
     if (options?.limit) params.append("limit", options.limit.toString())
     if (options?.offset) params.append("offset", options.offset.toString())

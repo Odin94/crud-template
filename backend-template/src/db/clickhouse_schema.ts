@@ -10,7 +10,7 @@ export const eventRecordSchema = z.object({
     user_id: z.uuid("Invalid user ID format").optional(),
     event_name: z.string("Invalid event name format"),
     event_data: z.record(z.string(), z.any()),
-    timestamp: z.date(),
+    timestamp: z.string(), // TODOdin: Find a way to make this a datetime that doesn't explode (iso.datetime doesnt work)
 })
 
 export const CREATE_DATABASE_SQL = (databaseName: string) => `

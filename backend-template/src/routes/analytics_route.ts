@@ -270,7 +270,7 @@ const eventsResponseSchema = z.object({
             user_id: z.string().optional(),
             event_name: z.string(),
             event_data: z.record(z.string(), z.any()),
-            timestamp: z.date(),
+            timestamp: z.string(), // TODOdin: Find a way to make this a datetime that doesn't explode (iso.datetime doesnt work)
         })
     ),
     total: z.number(),
