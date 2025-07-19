@@ -2,11 +2,9 @@ import fp from "fastify-plugin"
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import { FastifyPluginAsync } from "fastify"
+import { env } from "../utils/env"
 
-import * as dotenv from "dotenv"
-dotenv.config()
-
-const connectionString = process.env.DATABASE_URL || "postgres://template_user:template_password@localhost:5432/template_db"
+const connectionString = env.DATABASE_URL
 
 const drizzlePlugin: FastifyPluginAsync = async (fastify) => {
     const client = postgres(connectionString)

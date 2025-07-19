@@ -10,5 +10,30 @@ services:
         volumes:
             - postgres_data:/var/lib/postgresql/data
 
+    clickhouse:
+        image: clickhouse/clickhouse-server
+        container_name: clickhouse-server
+        ports:
+            - "8123:8123" # HTTP interface for client applications
+            - "9000:9000" # TCP interface for native ClickHouse client/drivers
+            - "9009:9009" # Secure TCP interface
+        volumes:
+            - clickhouse_data:/var/lib/clickhouse
+            - clickhouse_log:/var/log/clickhouse-server
+        # Optional: uncomment to add custom configuration files
+        # - ./custom_config.xml:/etc/clickhouse-server/config.d/custom_config.xml
+        # - ./custom_users.xml:/etc/clickhouse-server/users.d/custom_users.xml
+        environment:
+            - CLICKHOUSE_PASSWORD=secure_password
+            - CLICKHOUSE_USER=default
+            - CLICKHOUSE_DB=database_name
+        ulimits:
+            nofile:
+                soft: 262144
+                hard: 262144
+
 volumes:
     postgres_data:
+
+    clickhouse_data:
+    clickhouse_log:

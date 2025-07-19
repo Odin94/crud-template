@@ -17,6 +17,8 @@ const app: FastifyPluginAsync<AppOptions> = async (fastify, opts): Promise<void>
 
     await fastify.register(cors, {})
 
+    // Error handler is set in sensible plugin registration (sensible.ts)
+
     // Do not touch the following lines
 
     // This loads all plugins defined in plugins
