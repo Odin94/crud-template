@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { fetchAllEvents } from "../user_requests"
+import { fetchAllEvents } from "../requests/user_requests"
 import { Chart } from "./ui/chart"
 
 type EventsChartProps = {
@@ -28,11 +28,14 @@ export function EventsChart({ token }: EventsChartProps) {
 
     useEffect(() => {
         if (eventsResponse?.events) {
-            const userEventCounts = eventsResponse.events.reduce((acc, event) => {
-                const userId = event.user_id || "Anonymous"
-                acc[userId] = (acc[userId] || 0) + 1
-                return acc
-            }, {} as Record<string, number>)
+            const userEventCounts = eventsResponse.events.reduce(
+                (acc, event) => {
+                    const userId = event.user_id || "Anonymous"
+                    acc[userId] = (acc[userId] || 0) + 1
+                    return acc
+                },
+                {} as Record<string, number>
+            )
 
             const data: ChartData[] = Object.entries(userEventCounts)
                 .map(([userId, count]) => ({

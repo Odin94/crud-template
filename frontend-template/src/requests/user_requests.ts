@@ -1,6 +1,5 @@
-import type { LoginResponse, UsersResponse, EventsResponse } from "./types"
-
-const API_BASE_URL = "http://localhost:3000"
+import type { LoginResponse, UsersResponse, EventsResponse } from "../types"
+import { env } from "../lib/env"
 
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
@@ -11,7 +10,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export async function loginUser(loginData: { email: string; password: string }): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${env.API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData),
@@ -20,7 +19,7 @@ export async function loginUser(loginData: { email: string; password: string }):
 }
 
 export async function createUser(userData: { name: string; email: string; password: string }): Promise<LoginResponse> {
-    const response = await fetch(`${API_BASE_URL}/users`, {
+    const response = await fetch(`${env.API_BASE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -29,14 +28,14 @@ export async function createUser(userData: { name: string; email: string; passwo
 }
 
 export async function fetchUsers(token: string): Promise<UsersResponse> {
-    const response = await fetch(`${API_BASE_URL}/users`, {
+    const response = await fetch(`${env.API_BASE_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
     })
     return handleResponse<UsersResponse>(response)
 }
 
 export async function logoutUser(token: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/logout`, {
+    const response = await fetch(`${env.API_BASE_URL}/logout`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -54,7 +53,7 @@ export async function fetchMyEvents(
     if (options?.offset) params.append("offset", options.offset.toString())
     if (options?.event_name) params.append("event_name", options.event_name)
 
-    const response = await fetch(`${API_BASE_URL}/analytics/my-events?${params}`, {
+    const response = await fetch(`${env.API_BASE_URL}/analytics/my-events?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
     })
     return handleResponse(response)
@@ -70,7 +69,7 @@ export async function fetchSessionEvents(
     if (options?.offset) params.append("offset", options.offset.toString())
     if (options?.event_name) params.append("event_name", options.event_name)
 
-    const response = await fetch(`${API_BASE_URL}/analytics/session/${sessionId}?${params}`, {
+    const response = await fetch(`${env.API_BASE_URL}/analytics/session/${sessionId}?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
     })
     return handleResponse(response)
@@ -89,7 +88,7 @@ export async function fetchTimeRangeEvents(
     if (options?.limit) params.append("limit", options.limit.toString())
     if (options?.offset) params.append("offset", options.offset.toString())
 
-    const response = await fetch(`${API_BASE_URL}/analytics/time-range?${params}`, {
+    const response = await fetch(`${env.API_BASE_URL}/analytics/time-range?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
     })
     return handleResponse(response)
@@ -101,7 +100,7 @@ export async function fetchAnalyticsStats(token: string): Promise<{
     mostFrequentEvent: { name: string; count: number } | null
     eventBreakdown: Record<string, number>
 }> {
-    const response = await fetch(`${API_BASE_URL}/analytics/stats`, {
+    const response = await fetch(`${env.API_BASE_URL}/analytics/stats`, {
         headers: { Authorization: `Bearer ${token}` },
     })
     return handleResponse(response)
@@ -112,7 +111,7 @@ export async function fetchAllEvents(token: string, options?: { limit?: number; 
     if (options?.limit) params.append("limit", options.limit.toString())
     if (options?.offset) params.append("offset", options.offset.toString())
 
-    const response = await fetch(`${API_BASE_URL}/analytics/events?${params}`, {
+    const response = await fetch(`${env.API_BASE_URL}/analytics/events?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
     })
     return handleResponse(response)

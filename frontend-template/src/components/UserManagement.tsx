@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import type { UsersResponse } from "../types"
-import { fetchUsers } from "../user_requests"
+import { fetchUsers } from "../requests/user_requests"
 import { useAuth } from "../hooks/useAuth"
 
 export function UserManagement() {

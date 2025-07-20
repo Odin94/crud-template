@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import { logoutUser } from "../user_requests"
+import { logoutUser } from "../requests/user_requests"
 
 export function useAuth() {
     const [token, setToken] = useState<string | null>(localStorage.getItem("jwt_token"))

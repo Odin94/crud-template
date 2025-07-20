@@ -4,7 +4,7 @@ import type { StringValue } from "ms"
 
 dotenv.config({ quiet: true })
 
-const envSchema = z.object({
+export const envSchema = z.object({
     DATABASE_URL: z.url("DATABASE_URL must be a valid URL"),
 
     JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters long"),
@@ -38,9 +38,4 @@ const parseEnv = () => {
 }
 
 export const env = parseEnv()
-
-export { envSchema }
-
-export type Env = Omit<z.infer<typeof envSchema>, "JWT_EXPIRES_IN"> & {
-    JWT_EXPIRES_IN: StringValue
-}
+export type Env = z.infer<typeof envSchema>

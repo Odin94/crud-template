@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 import type { LoginResponse } from "../types"
-import { loginUser } from "../user_requests"
+import { loginUser } from "../requests/user_requests"
 
 interface LoginFormProps {
     onLoginSuccess: (data: LoginResponse) => void
