@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 import type { LoginResponse } from "../types"
 import { createUser } from "../requests/user_requests"
+import { Button } from "./ui/button"
 
 interface SignupFormProps {
     onSignupSuccess: (data: LoginResponse) => void
@@ -65,13 +66,9 @@ export function SignupForm({ onSignupSuccess }: SignupFormProps) {
                     />
                 </div>
                 {createUserMutation.error && <div className="text-red-500 text-sm">{createUserMutation.error.message}</div>}
-                <button
-                    type="submit"
-                    className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                    disabled={createUserMutation.isPending}
-                >
+                <Button type="submit" className="w-full" disabled={createUserMutation.isPending}>
                     {createUserMutation.isPending ? "Creating..." : "Create Account"}
-                </button>
+                </Button>
             </form>
         </div>
     )

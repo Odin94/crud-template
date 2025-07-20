@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { LoginForm } from "./LoginForm"
 import { SignupForm } from "./SignupForm"
+import { Button } from "./ui/button"
 import type { LoginResponse } from "../types"
 
 interface AuthContainerProps {
@@ -14,22 +15,12 @@ export function AuthContainer({ onAuthSuccess }: AuthContainerProps) {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10">
             <div className="w-md">
                 <div className="flex mb-6">
-                    <button
-                        onClick={() => setIsLogin(true)}
-                        className={`flex-1 py-2 px-4 rounded-l ${
-                            isLogin ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                    >
+                    <Button onClick={() => setIsLogin(true)} variant={isLogin ? "default" : "outline"} className="flex-1 rounded-r-none">
                         Login
-                    </button>
-                    <button
-                        onClick={() => setIsLogin(false)}
-                        className={`flex-1 py-2 px-4 rounded-r ${
-                            !isLogin ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                    >
+                    </Button>
+                    <Button onClick={() => setIsLogin(false)} variant={!isLogin ? "default" : "outline"} className="flex-1 rounded-l-none">
                         Register
-                    </button>
+                    </Button>
                 </div>
 
                 {isLogin ? <LoginForm onLoginSuccess={onAuthSuccess} /> : <SignupForm onSignupSuccess={onAuthSuccess} />}
