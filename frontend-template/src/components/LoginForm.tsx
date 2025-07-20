@@ -28,7 +28,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
     }
 
     return (
-        <div className="w-full max-w-md bg-white rounded-lg shadow p-6">
+        <div className="w-full bg-white rounded-lg shadow p-6">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Login</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
